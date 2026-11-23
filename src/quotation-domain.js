@@ -34,13 +34,19 @@ export function validateMachine(m) {
  if(Number(m.price)>Number(m.mrp)) throw Error('Selling price cannot exceed MRP.');
  if(m.image_url && !/^(https:\/\/|data:image\/(jpeg|png|webp);base64,|\/demo-machines\/[a-z0-9-]+\.jpg$)/i.test(m.image_url)) throw Error('Upload a photo or use an HTTPS image URL.');
  if(String(m.specifications||'').length>3000) throw Error('Keep specifications within 3,000 characters.');
+ for(const [key,max] of [['brand',80],['series',120],['model_code',80]])if(String(m[key]||'').length>max)throw Error(`Keep ${key.replace('_',' ')} within ${max} characters.`);
+ if(m.source_url&&!/^https:\/\//.test(m.source_url))throw Error('Use an HTTPS manufacturer source URL.');
  const result={...normalized,name:m.name.trim(),length:Number(normalized.length),breadth:Number(normalized.breadth),height:Number(normalized.height),mrp:round(Number(m.mrp)),price:round(Number(m.price)),specifications:String(m.specifications||'').trim()};
- return {...result,dimensions:machineDimensions(result)};
+ return {...result,price_on_request:Boolean(m.price_on_request)&&Number(m.mrp)===0,dimensions:machineDimensions(result)};
+}
+export function assertMachinePriced(machine) {
+ if(machine.price_on_request)throw Error('Set a confirmed MRP in Machinery database before adding this machine to a quotation.');
 }
 export function quoteTotals(items,tax=0,delivery=0) {
  if(!Array.isArray(items)||!items.length) throw Error('Add at least one machine to the quotation.');
  let mrp=0,subtotal=0;
  for(const i of items){
+  assertMachinePriced(i);
   if(!i.name?.trim() || !Number.isInteger(Number(i.quantity)) || Number(i.quantity)<1 || Number(i.quantity)>999) throw Error('Quantities must be whole numbers from 1 to 999.');
   if(i.price==='' || i.price==null || i.mrp==='' || i.mrp==null || !Number.isFinite(Number(i.price)) || !Number.isFinite(Number(i.mrp)) || Number(i.price)<0 || Number(i.mrp)<Number(i.price)) throw Error('Each selling price must be between zero and MRP.');
   mrp+=round(Number(i.mrp)*Number(i.quantity)); subtotal+=round(Number(i.price)*Number(i.quantity));
