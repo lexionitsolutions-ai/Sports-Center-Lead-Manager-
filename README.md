@@ -37,6 +37,8 @@ Admins can manage inquiries, outcomes, collected sales, gym contracts, visits an
 
 ## Verify and deploy
 
+A deliberately hosted demo can set `VITE_DEMO_PREVIEW=true` in Vercel while both Supabase variables are absent. It displays a persistent demo notice and saves only in the visitor's browser. Remove that flag when configuring the real Supabase URL and public key; partial live configuration is rejected by the build guard. Hosted demo mode does not connect WhatsApp or provision the database.
+
 ```sh
 npm test
 npm run build

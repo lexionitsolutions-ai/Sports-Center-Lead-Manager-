@@ -5,6 +5,8 @@ import {validateDeploymentEnv} from '../scripts/check-deployment.mjs';
 test('Vercel builds require Supabase while local builds can preview demo mode',()=>{
   assert.doesNotThrow(()=>validateDeploymentEnv({}));
   assert.throws(()=>validateDeploymentEnv({VERCEL:'1'}),/Set VITE_SUPABASE_URL/);
+  assert.doesNotThrow(()=>validateDeploymentEnv({VERCEL:'1',VITE_DEMO_PREVIEW:'true'}));
+  assert.throws(()=>validateDeploymentEnv({VERCEL:'1',VITE_DEMO_PREVIEW:'true',VITE_SUPABASE_URL:'https://example.supabase.co'}),/Set VITE_SUPABASE_URL/);
   const env={VERCEL:'1',VITE_SUPABASE_URL:'https://example.supabase.co',VITE_SUPABASE_ANON_KEY:'sb_publishable_examplepublickey123456'};
   assert.doesNotThrow(()=>validateDeploymentEnv(env));
   assert.throws(()=>validateDeploymentEnv({...env,VITE_SUPABASE_URL:'http://example.supabase.co'}),/HTTPS/);

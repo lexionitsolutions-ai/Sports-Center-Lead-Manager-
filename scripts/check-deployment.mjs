@@ -4,6 +4,8 @@ export function validateDeploymentEnv(env) {
   if (env.VERCEL !== '1') return;
   const projectUrl = env.VITE_SUPABASE_URL?.trim();
   const publicKey = env.VITE_SUPABASE_ANON_KEY?.trim();
+  // A deliberately hosted sample workspace must be explicitly selected; partial live settings still fail.
+  if (!projectUrl && !publicKey && env.VITE_DEMO_PREVIEW === 'true') return;
   if (!projectUrl || !publicKey) throw Error('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the Vercel project before deploying. Production must connect to Supabase.');
   let url;
   try { url = new URL(projectUrl); } catch { throw Error('VITE_SUPABASE_URL must be a valid HTTPS project URL.'); }
