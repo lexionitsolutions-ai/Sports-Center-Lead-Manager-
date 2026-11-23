@@ -1,0 +1,7 @@
+# Sports Centre logo
+
+`sc-shield-hd.png` is a 1312 × 1199 transparent RGBA PNG refined from the owner's supplied red-and-black SC shield using the built-in image-generation tool. Its alpha channel ranges from 0 to 255. The website pairs this shield with a crisp HTML/CSS SPORTS CENTRE wordmark; the asset is also the favicon and touch icon.
+
+Generation prompt:
+
+> Edit the user's attached SPORTS CENTRE logo into a crisp high-resolution production brand mark for a business web app. The attached image is the edit target. Preserve its recognisable red and black shield silhouette, the gently scalloped upper edge, the pointed lower shield, its strong black outer outline with a fine red inset outline, and the ascending diagonal black band with the white letters SC. Refine the symmetry, line consistency, sharp edges and clean letterforms; retain the original identity rather than inventing a different shield. Remove the white photo background, black border around the photo and the bottom SPORTS CENTRE wordmark, leaving ONLY the standalone shield with SC centered on a truly transparent canvas. Flat clean graphic finish, saturated red around #e3262e, near-black outline, pure white SC; no gradients, shadows, texture, bevels, extra symbols, mockup or watermark. Give the shield generous transparent padding so none of its edges are clipped. The output will be used as a small navigation logo and a large login brand mark.

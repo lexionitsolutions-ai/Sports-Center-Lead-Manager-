@@ -1,5 +1,7 @@
 # Sports Center workspace
 
+The refreshed interface opens administrators on **Overview**. Its five primary destinations are **Overview, Inquiries, Follow-ups, Service & AMC, Quotations**, shown in a fixed bottom navigation bar with space reserved for device safe areas. The top-left three-dot menu contains secondary tools; Machinery database is the last item. Technicians retain their service-only navigation. The menu supports Escape, focus containment and focus restoration. The refined red-and-black SC logo is used in the header, login, menu, favicon and touch icon; its source asset and generation notes are in `public/brand/`.
+
 Responsive React application for sales, dated follow-ups, gym service / AMC, and school and college equipment deliveries. Frontend: Vite + React. Backend: Supabase Auth + PostgreSQL with row-level security. Ready for Vercel.
 
 ## Run locally
