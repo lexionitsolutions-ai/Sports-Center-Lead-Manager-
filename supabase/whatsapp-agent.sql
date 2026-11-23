@@ -89,6 +89,7 @@ grant update(enabled,followup_time,missed_calls_enabled) on public.agent_setting
 grant select on public.agent_conversations,public.agent_messages,public.agent_outbox,public.agent_tasks to authenticated;
 grant update(done) on public.agent_tasks to authenticated;
 grant all on public.agent_settings,public.agent_conversations,public.agent_events,public.agent_messages,public.agent_outbox,public.agent_tasks,public.agent_calls to service_role;
+grant select on public.inquiries to service_role;
 
 create function public.agent_normalize_phone(p_phone text) returns text language plpgsql immutable set search_path=public as $$
 declare v text;

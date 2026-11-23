@@ -104,5 +104,17 @@ test('agent migration enforces permissions, durable deduplication, scheduling an
    assert.deepEqual(row,{inquiry_id:null,consent:false,pending_date:null});
    assert.equal(await scalar('select state from agent_outbox where conversation_id=$1',[c2]),'cancelled');
   });
+  await t.test('public signup cannot provision staff and authorized Auth creation atomically creates a profile',async()=>{
+   await db.exec("alter table auth.users add column raw_app_meta_data jsonb default '{}'::jsonb");
+   await db.exec(await readFile(new URL('../supabase/staff-accounts.sql',import.meta.url),'utf8'));
+   const staffId='00000000-0000-0000-0000-000000000003';
+   await query('insert into auth.users(id) values($1)',[staffId]);
+   assert.equal(await scalar('select count(*)::integer from profiles where id=$1',[staffId]),0);
+   const metadata={sports_center_staff:true,sports_center_role:'technician',sports_center_name:'New Technician',sports_center_phone:'+919876543210'};
+   await query('update auth.users set raw_app_meta_data=$2 where id=$1',[staffId,metadata]);
+   assert.deepEqual((await query('select name,role,phone from profiles where id=$1',[staffId]))[0],{name:'New Technician',role:'technician',phone:'+919876543210'});
+   await assert.rejects(query('insert into auth.users(id,raw_app_meta_data) values($1,$2)',['00000000-0000-0000-0000-000000000004',metadata]),/duplicate key/);
+   assert.equal(await scalar("select count(*)::integer from auth.users where id='00000000-0000-0000-0000-000000000004'"),0);
+  });
  }finally{await db.close();}
 });

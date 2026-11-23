@@ -1,6 +1,7 @@
 # Upload only the frontend and its shared, secret-free business rules.
 /*
 !src
+!shared
 !public
 !server
 /server/*

@@ -17,9 +17,9 @@ Without environment variables the application opens a **demo workspace**. It inc
 
 ## Connect Supabase
 
-1. Create a Supabase project. Run [supabase/schema.sql](supabase/schema.sql) once in its SQL Editor against a new database, then run [supabase/quotations.sql](supabase/quotations.sql) and [supabase/machinery-database.sql](supabase/machinery-database.sql), in that order. Existing workspaces that already have quotation tables only need the machinery-database migration.
+1. Create a Supabase project. Run [supabase/schema.sql](supabase/schema.sql) once in its SQL Editor against a new database, then run [supabase/quotations.sql](supabase/quotations.sql) and [supabase/machinery-database.sql](supabase/machinery-database.sql), in that order. Then apply `supabase/followups.sql`, `supabase/whatsapp-agent.sql`, and `supabase/staff-accounts.sql`. Inspect existing tables before choosing migrations for an existing database.
 2. Create each team member in **Authentication → Users**. Disable public sign-ups in Auth settings; this is an invitation-only internal workspace.
-3. Assign each user a profile through SQL using the examples at the end of the schema. Roles are `admin` and `technician`. There is no client-side role assignment. The same sign-in page routes users according to their assigned role.
+3. Sign in using your phone number and password, then open **Staff accounts** to create team members with the `admin` or `technician` role. The server verifies the current administrator and provisions the protected profile. The same sign-in page routes people according to their assigned role.
 4. Copy `.env.example` to `.env.local`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to the project's URL and browser-safe publishable/anon key. Never use the service-role or secret key in the frontend.
 5. Restart the dev server. Sign in with a provisioned account. Live mode starts with empty tables; add your real gyms and inquiries.
 
@@ -144,3 +144,16 @@ Content-Type: application/json
 Use the separate `TELEPHONY_WEBHOOK_SECRET`. Events/signatures older than five minutes are rejected and call IDs are deduplicated. Expose this endpoint over HTTPS only when a verified bridge is ready. The same dashboard missed-call switch and consent checks apply. No SIM-call monitoring or iPhone app has been installed.
 
 Run `npm test` and `npm run build` before deployment. Tests include an isolated PostgreSQL runtime for migration execution, RLS, queue claims, date confirmation, opt-outs, event deduplication and call suppression, plus transport and webhook tests. Live Supabase, Evolution activation/pairing, Docker and end-to-end phone behavior still require the pilot above.
+
+
+## Phone sign-in and staff accounts
+
+Production app: https://sports-center-lead-manager.vercel.app. Database project: `lroqwihqwazhdnksgqvy`. The live workspace starts empty; demo records were not inserted.
+
+People sign in with a 10-digit Indian phone number (or an international number prefixed with +) and their password. Numbers normalize to one account. Internally, a reserved `.invalid` email identifier lets Supabase password authentication work without collecting an email address or configuring SMS. That internal identifier is not a real inbox; email reset links are not available. Passwords are handled by Supabase Auth and are never stored in the profiles table or repository.
+
+Administrators open **Staff accounts**, enter the person's name, phone, initial password and access level, then create the account. Technicians see the gym directory and their own service visits. Administrators have full business and staff-management access. Share initial credentials privately. There is no self-registration or client-side role assignment.
+
+Apply `supabase/staff-accounts.sql` after the existing migrations and deploy the `staff-accounts` Edge Function from `supabase/functions/staff-accounts/index.ts`, including `shared/staff-domain.js` with the same relative directory layout. The function authenticates the bearer token with Supabase Auth and independently checks the caller's administrator profile. Gateway JWT verification is disabled because the function performs these checks itself. Public requests are rejected. It uses its built-in server-only service-role environment key; that key must never enter the frontend.
+
+Trusted Auth Admin API metadata provisions a profile when the user is created or metadata is applied. Unprovisioned Auth accounts have no workspace role and cannot access business records. Public signup cannot supply administrator-controlled app metadata. Existing administrator password resets require a trusted server-side Auth Admin API operation; no email-based recovery is exposed. The initial one-use administrator bootstrap endpoint has been replaced by the authenticated staff-only function.

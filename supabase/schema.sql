@@ -84,6 +84,7 @@ create policy visits_admin_update on public.visits for update to authenticated u
 create policy deliveries_admin on public.deliveries for all to authenticated using(public.is_admin()) with check(public.is_admin());
 revoke all on public.profiles,public.inquiries,public.gyms,public.visits,public.deliveries from anon;
 grant select on public.profiles to authenticated;
+grant select on public.profiles,public.inquiries to service_role;
 revoke insert,update,delete on public.profiles from authenticated;
 grant select,insert,update,delete on public.inquiries,public.gyms,public.deliveries to authenticated;
 grant select,insert,update on public.visits to authenticated;
