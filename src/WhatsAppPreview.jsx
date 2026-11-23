@@ -1,0 +1,11 @@
+import React, { useState } from 'react';
+import { MessageCircle, Copy, Check, RefreshCw } from 'lucide-react';
+import { Dialog, Label } from './MachineryCatalog';
+import { inquiryMessage, whatsappLink } from './whatsapp';
+
+export default function WhatsAppPreview({inquiry,close}) {
+ const [message,setMessage]=useState(()=>inquiryMessage(inquiry)),[phone,setPhone]=useState(inquiry.phone),[copied,setCopied]=useState(false),[error,setError]=useState('');
+ async function copy(){setError('');try{await navigator.clipboard.writeText(message);setCopied(true);}catch{setError('Copy is unavailable here. Select the message text to copy it.');}}
+ function open(){setError('');try{const link=whatsappLink(phone,message);window.open(link,'_blank','noopener,noreferrer');}catch(err){setError(err.message);}}
+ return <Dialog title="Your WhatsApp message" close={close}><div className="whatsapp-preview"><div className="whatsapp-recipient"><span className="whatsapp-icon"><MessageCircle size={24}/></span><div><strong>{inquiry.name}</strong><span>{inquiry.reason}{inquiry.reason==='Other'&&inquiry.other_reason?` · ${inquiry.other_reason}`:''}</span></div></div><Label title="WhatsApp number"><input type="tel" value={phone} maxLength={25} onChange={e=>{setPhone(e.target.value);setError('');}}/></Label><Label title="Message"><textarea data-dialog-focus rows={12} maxLength={5000} value={message} onChange={e=>{setMessage(e.target.value);setCopied(false);}}/></Label><div className="whatsapp-tools"><button className="text-button" onClick={copy}>{copied?<Check size={15}/>:<Copy size={15}/>} {copied?'Copied':'Copy message'}</button><button className="text-button" onClick={()=>{setMessage(inquiryMessage(inquiry));setCopied(false);}}><RefreshCw size={14}/>Reset message</button></div><p className="whatsapp-send-note">Project names are demos; Instagram links can be added later. Review the message, then open WhatsApp and press Send.</p>{error&&<div className="form-error" role="alert">{error}</div>}</div><div className="modal-footer"><button className="button secondary" onClick={close}>Later</button><button className="button whatsapp-button" disabled={!message.trim()} onClick={open}><MessageCircle size={17}/>Open WhatsApp</button></div></Dialog>;
+}

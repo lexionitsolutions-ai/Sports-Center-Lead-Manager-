@@ -1,0 +1,10 @@
+node_modules
+.git
+.env*
+.npm-cache
+tmp
+dist
+evolution-go-source
+src
+public
+tests

@@ -1,0 +1,16 @@
+node_modules/
+.npm-cache/
+dist/
+.env
+.env.local
+.env.agent
+.vercel/
+*.log
+
+tmp/
+.vercel
+.env*
+!.env.example
+!.env.agent.example
+supabase/.temp/
+supabase/.branches/

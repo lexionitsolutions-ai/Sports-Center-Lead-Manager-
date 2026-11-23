@@ -1,0 +1,14 @@
+# Upload only the frontend and its shared, secret-free business rules.
+/*
+!src
+!public
+!server
+/server/*
+!/server/agent-domain.js
+!scripts
+/scripts/*
+!/scripts/check-deployment.mjs
+!package.json
+!package-lock.json
+!index.html
+!vercel.json

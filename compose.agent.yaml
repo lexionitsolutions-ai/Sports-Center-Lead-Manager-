@@ -1,0 +1,62 @@
+# Run from this workspace: docker compose --env-file .env.agent -f compose.agent.yaml up -d --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${EVOLUTION_POSTGRES_PASSWORD:?Set a random hex database password}
+    volumes:
+      - evolution-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  evolution:
+    build: ./evolution-go-source
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8080"
+      POSTGRES_AUTH_DB: postgresql://postgres:${EVOLUTION_POSTGRES_PASSWORD}@postgres:5432/evogo_auth?sslmode=disable
+      POSTGRES_USERS_DB: postgresql://postgres:${EVOLUTION_POSTGRES_PASSWORD}@postgres:5432/evogo_users?sslmode=disable
+      GLOBAL_API_KEY: ${EVOLUTION_GLOBAL_API_KEY:?Set a random Evolution administrator key}
+      DATABASE_SAVE_MESSAGES: "false"
+      CONNECT_ON_STARTUP: "true"
+      CLIENT_NAME: SportsCenter
+      OS_NAME: Sports Center
+      WEBHOOK_FILES: "false"
+      MINIO_ENABLED: "false"
+      AMQP_GLOBAL_ENABLED: "false"
+      WEBHOOK_URL: ""
+      WADEBUG: "WARN"
+      LOGTYPE: "console"
+      TZ: Asia/Kolkata
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - evolution-logs:/app/logs
+  agent:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL:?Set the Supabase project URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Set the server-only Supabase key}
+      EVOLUTION_URL: http://evolution:8080
+      EVOLUTION_INSTANCE_TOKEN: ${EVOLUTION_INSTANCE_TOKEN:-not-configured}
+      EVOLUTION_INSTANCE_ID: ${EVOLUTION_INSTANCE_ID:-not-configured}
+      AGENT_WEBHOOK_SECRET: ${AGENT_WEBHOOK_SECRET:?Set a random webhook secret}
+      AGENT_SEND_ENABLED: ${AGENT_SEND_ENABLED:-false}
+      TELEPHONY_WEBHOOK_SECRET: ${TELEPHONY_WEBHOOK_SECRET:-}
+      PORT: "8787"
+    depends_on:
+      - evolution
+    ports:
+      - "127.0.0.1:8787:8787"
+volumes:
+  evolution-db:
+  evolution-logs:
