@@ -25,6 +25,14 @@ export const demoMachines = () => [
  ['Three-tier dumbbell rack','Racks','150 × 65 × 90 cm',25000,20000],
 ].map(([name,category,dimensions,mrp,price],i)=>normalizeMachine({id:`demo-machine-${i}`,name,category,dimensions,mrp,price,image_url:i===0?'/demo-machines/lat-pulldown.jpg':'',specifications:category==='Dumbbells'?'One pair, 10 kg each. Rubber-coated heads and textured handles.':category==='Racks'?'Three-tier storage frame. Dumbbells sold separately.':'Commercial frame, adjustable setup and padded contact points. Sample specifications; confirm the actual model and included accessories.',demo:true}));
 export const round = n => Math.round((n + Number.EPSILON) * 100) / 100;
+export const TENTATIVE_QUOTE_MRP = 100000;
+export function quotationLine(machine) {
+ return {line_id:crypto.randomUUID(),machine_id:machine.id,name:machine.name,category:machine.category,dimensions:machineDimensions(machine),specifications:machine.specifications||'',image_url:machine.image_url||'',mrp:TENTATIVE_QUOTE_MRP,price:TENTATIVE_QUOTE_MRP,quantity:1,price_on_request:false};
+}
+export function applyQuotationDiscount(items,percentage) {
+ if(percentage===''||percentage==null||!Number.isFinite(Number(percentage))||Number(percentage)<0||Number(percentage)>100)throw Error('Enter a discount from 0 to 100%.');
+ return items.map(item=>({...item,price:round(Number(item.mrp)*(1-Number(percentage)/100))}));
+}
 export function validateMachine(m) {
  if(!m.name?.trim() || !CATEGORIES.includes(m.category)) throw Error('Enter a machine name and category.');
  const normalized=normalizeMachine(m);

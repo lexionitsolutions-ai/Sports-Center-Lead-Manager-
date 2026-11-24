@@ -1,6 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { demoMachines, quoteTotals, validateMachine, normalizeMachine, machineDimensions } from '../src/quotation-domain.js';
+import { demoMachines, quoteTotals, validateMachine, normalizeMachine, machineDimensions, quotationLine, applyQuotationDiscount } from '../src/quotation-domain.js';
+
+test('new quotation lines use tentative one lakh pricing without changing catalog records',()=>{
+ const machine={id:'unpriced',name:'Lat pulldown',mrp:0,price_on_request:true};
+ const line=quotationLine(machine);
+ assert.equal(line.mrp,100000);assert.equal(line.price,100000);assert.equal(line.price_on_request,false);
+ assert.equal(machine.mrp,0);assert.equal(machine.price_on_request,true);
+ assert.equal(quoteTotals([line],18).total,118000);
+});
+test('bulk discount applies to each MRP, supports overrides and does not compound',()=>{
+ const items=['Lat pulldown','Chest press','Shoulder press'].map(name=>quotationLine({name}));
+ const discounted=applyQuotationDiscount(items,35);
+ assert.deepEqual(discounted.map(i=>i.price),[65000,65000,65000]);
+ assert.equal(quoteTotals(discounted,18).subtotal,195000);
+ assert.equal(quoteTotals(discounted,18).total,230100);
+ assert.deepEqual(applyQuotationDiscount(discounted,35).map(i=>i.price),[65000,65000,65000]);
+ discounted[0].price=60000;assert.equal(quoteTotals(discounted,18).subtotal,190000);
+ assert.equal(items[0].price,100000);
+ assert.equal(applyQuotationDiscount(items,100)[0].price,0);
+ assert.equal(applyQuotationDiscount(items,0)[0].price,100000);
+ for(const invalid of ['',null,-1,101,NaN,Infinity])assert.throws(()=>applyQuotationDiscount(items,invalid));
+});
 
 test('quotation totals use offer prices, quantities, GST and final delivery charges',()=>{
  const m=demoMachines()[0];
